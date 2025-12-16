@@ -1,0 +1,12 @@
+# Ignore all LAZ point cloud files
+*.laz
+
+# Ignore all PNG images
+*.png
+
+# Ignore data directory (and everything inside it)
+data/
+
+# miscellaneous
+*.jpg
+*.npz
