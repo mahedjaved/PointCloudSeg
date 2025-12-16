@@ -1,5 +1,5 @@
 # PointCloudSeg
-Project placeholder for designing initial version of an ML pipeline for Point Cloud Semantic Segmentation that can grow into a advanced-grade ML pipeline. Focusing more on methodology, licensing, workflow, and reasoning from data acquisition to data preparation and a training the model.
+Project for designing initial version of an ML pipeline for Point Cloud Semantic Segmentation that can grow into a advanced-grade ML pipeline. Focusing more on methodology, licensing, workflow, and reasoning from data acquisition to data preparation and a training the model.
 
 Dir Structure
 ```
@@ -27,10 +27,12 @@ PointCloudSeg/
 - Random Scaling : Scale the point cloud by a random factor.
 - Random Jitter : Add random noise (Gaussian/normal) to the point cloud.
 - Random Flip : Flip the point cloud along the x-axis with a probability of 0.5.
+- VoxelDownsampler : Reduces the density of the point cloud by downsampling voxels to a fixed grid size.
+- PointCloudNormalizer : Normalizes the point cloud data by centering the origin and scaling to unit sphere
 
 - Aiming to abstract the augmentation process into a generic framework that can be easily integrated into any existing deep learning pipeline for point cloud semantic segmentation.
 - Using Python ABC module to create a base class for augmentation that can be inherited by any augmentation class.
-- Main code inspired from: https://torch-points3d.readthedocs.io/en/latest/src/api/transforms.html
+- Main code inspired from: https://torch-points3d.readthedocs.io/en/latest/src/api/transforms.html - improvements include SOLID inspired design principles for better modularity and maintainability
 
 # 2. Pre-Processing
 - Species Mapping : Maps tree species names to integer class IDs for training.
@@ -57,7 +59,15 @@ PointCloudSeg/
     - Perform post-processing split:
         - Slits the generated data samples into train (80%) and validation (20%).
         - Saves the train/val IDs as text files for later use in training.
+- Code partly inspired from : https://www.kaggle.com/code/hedifeki/tree-detection - edits involve having a runner class for managing preprocessing and training tasks
 
+# 3. Train
+- Implements a PointNet-style neural network for 3D point cloud classification
+- Uses PyTorch
+- Trains and evaluates the model on a tree point-cloud dataset
+- Code inspired from : https://github.com/erikwijmans/Pointnet2_PyTorch/blob/master/pointnet2/models/pointnet2_msg_cls.py - modifications include minimal adaptation for tree point-cloud classification
+
+Architecture is inspired by PointNet++, but simplified (no sampling/grouping)
 # References
 [1] Advancements in Point Cloud Data Augmentation for Deep Learning: A Survey
 Qinfeng Zhua,b, Lei Fana, 1

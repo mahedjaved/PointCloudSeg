@@ -61,6 +61,57 @@ class PreprocessingConfig:
     # Random seed for reproducibility
     seed = 42
 
+@dataclass
+class TrainingConfig:
+    """Training hyperparameters"""
+    
+    optimizer: str = "adam"
+    learning_rate: float = 0.001
+    weight_decay: float = 0.0001
+    momentum: float = 0.9
+    
+    lr_scheduler: str = "cosine"
+    lr_decay_rate: float = 0.1
+    lr_decay_epochs: List[int] = field(default_factory=lambda: [100, 150])
+    
+    num_epochs: int = 200
+    batch_size: int = 8
+    accumulation_steps: int = 1
+    
+    loss_function: str = "cross_entropy"
+    class_weights: Optional[List[float]] = None
+    ignore_index: int = 0
+    
+    label_smoothing: float = 0.0
+    mixup_alpha: float = 0.0
+    
+    eval_frequency: int = 5
+    save_frequency: int = 10
+    
+    patience: int = 20
+    min_delta: float = 0.001
+    
+    checkpoint_dir: Path = Path("checkpoints")
+    save_best_only: bool = True
+    
+    log_dir: Path = Path("logs")
+    log_frequency: int = 10
+    
+    device: str = "cuda"
+    mixed_precision: bool = True
+    num_workers: int = 4
+    pin_memory: bool = True
+    
+    seed: int = 42
+    deterministic: bool = True
+
+
+@dataclass
+class ModelConfig:
+    name: str = "pointnet"
+    in_channels: int = 4
+    num_classes: int = 9
+
 
 @dataclass
 class Config:
@@ -68,6 +119,8 @@ class Config:
     
     dataset: DatasetConfig = field(default_factory=DatasetConfig)
     preprocessing: PreprocessingConfig = field(default_factory=PreprocessingConfig)
+    model: ModelConfig = field(default_factory=ModelConfig)
+    training: TrainingConfig = field(default_factory=TrainingConfig)
     
     # Project metadata
     project_name = "pointcloud_segmentation"
@@ -91,6 +144,7 @@ class Config:
         
         return True
 
+    # optional
     @classmethod
     def from_yaml(cls, path: str) -> "Config":
         with open(path, "r") as f:
@@ -130,7 +184,7 @@ class Config:
             yaml.safe_dump(data, f)
 
 
-# Default configuration instance
+# Default configuration instance - serving as a singleton copy shared across modules
 DEFAULT_CONFIG = Config()
 
 

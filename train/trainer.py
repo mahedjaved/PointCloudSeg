@@ -1,126 +1,195 @@
-# ==============================================================
-# Handling imports and libraries
-# ==============================================================
+"""
+Code partly inspired from : https://github.com/erikwijmans/Pointnet2_PyTorch/blob/master/pointnet2/models/pointnet2_msg_cls.py
+"""
+import argparse
+from pathlib import Path
 
-# IMPORT argument parsing utilities
-# IMPORT filesystem path handling
+import numpy as np
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+from torch.utils.data import Dataset, DataLoader
 
-# IMPORT numerical libraries
-# IMPORT deep learning framework
-
-# IMPORT configuration loader
-
-
-# ==============================================================
-# Defining the dataset
-# ==============================================================
-
-# CLASS PointCloudDataset EXTENDS Dataset:
-
-#     FUNCTION __init__(root_directory, split_name):
-#         store root_directory
-#         samples_directory = root_directory / "samples"
-#         read split file (e.g. train.txt)
-#         store cleaned list of sample IDs
-
-#     FUNCTION __len__():
-#         RETURN number of samples
-
-#     FUNCTION __getitem__(index):
-#         sample_id = sample_ids[index]
-#         load compressed numpy file for sample_id
-#         extract point array
-#         extract class label
-#         convert both to tensors
-#         RETURN points_tensor, label_tensor
+from config import get_config
 
 
-# ==============================================================
-# Defining the model
-# ==============================================================
+class TreePointCloudDataset(Dataset):
+    def __init__(self, root_dir: Path, split: str):
+        self.root_dir = Path(root_dir)
+        self.samples_dir = self.root_dir / "samples"
+        split_file = self.root_dir / f"{split}.txt"
+        ids = split_file.read_text().splitlines()
+        self.sample_ids = [s.strip() for s in ids if s.strip()]
 
-# CLASS PointNetClassifier EXTENDS NeuralNetwork:
+    def __len__(self) -> int:
+        return len(self.sample_ids)
 
-#     FUNCTION __init__(input_channels, number_of_classes):
-#         DEFINE convolution + batchnorm layers
-#         DEFINE fully connected layers
-#         DEFINE dropout for regularization
+    def __getitem__(self, idx: int):
+        sid = self.sample_ids[idx]
+        data = np.load(self.samples_dir / f"{sid}.npz")
+        points = data["points"].astype(np.float32)
+        label = int(data["label"])
+        pts = torch.from_numpy(points)
+        y = torch.tensor(label, dtype=torch.long)
+        return pts, y
 
-#     FUNCTION forward(input_points):
-#         transpose points to channel-first
-#         apply convolution blocks with ReLU
-#         aggregate features using max pooling
-#         apply fully connected layers
-#         RETURN class scores
 
-# ==============================================================
-# Training for one epoch
-# ==============================================================
+class PointNet2Classifier(nn.Module):
+    def __init__(self, in_channels: int, num_classes: int):
+        super().__init__()
+        self.sa1_conv1 = nn.Conv1d(in_channels, 64, 1)
+        self.sa1_bn1 = nn.BatchNorm1d(64)
+        self.sa1_conv2 = nn.Conv1d(64, 128, 1)
+        self.sa1_bn2 = nn.BatchNorm1d(128)
 
-# FUNCTION train_one_epoch(model, data_loader, optimizer, loss_fn, device):
+        self.sa2_conv1 = nn.Conv1d(128, 128, 1)
+        self.sa2_bn1 = nn.BatchNorm1d(128)
+        self.sa2_conv2 = nn.Conv1d(128, 256, 1)
+        self.sa2_bn2 = nn.BatchNorm1d(256)
 
-#     set model to training mode
-#     initialize loss and accuracy counters
+        self.glob_conv = nn.Conv1d(256, 512, 1)
+        self.glob_bn = nn.BatchNorm1d(512)
 
-#     FOR each batch of (points, labels):
-#         move data to device
-#         clear optimizer gradients
-#         predictions = model(points)
-#         loss = loss_fn(predictions, labels)
-#         backpropagate loss
-#         optimizer updates parameters
-#         update running loss and accuracy
+        self.fc1 = nn.Linear(512, 256)
+        self.bn1 = nn.BatchNorm1d(256)
+        self.fc2 = nn.Linear(256, 128)
+        self.bn2 = nn.BatchNorm1d(128)
+        self.dropout = nn.Dropout(p=0.4)
+        self.fc3 = nn.Linear(128, num_classes)
 
-#     RETURN average_loss, average_accuracy
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        x = x.transpose(1, 2)
+        x = F.relu(self.sa1_bn1(self.sa1_conv1(x)))
+        x = F.relu(self.sa1_bn2(self.sa1_conv2(x)))
+        x = F.relu(self.sa2_bn1(self.sa2_conv1(x)))
+        x = F.relu(self.sa2_bn2(self.sa2_conv2(x)))
+        x = F.relu(self.glob_bn(self.glob_conv(x)))
+        x = torch.max(x, 2)[0]
+        x = F.relu(self.bn1(self.fc1(x)))
+        x = F.relu(self.bn2(self.fc2(x)))
+        x = self.dropout(x)
+        x = self.fc3(x)
+        return x
 
-# ==============================================================
-# Evaluation
-# ==============================================================
 
-# FUNCTION evaluate(model, data_loader, loss_fn, device):
+def train_one_epoch(
+    model: nn.Module,
+    loader: DataLoader,
+    optimizer: torch.optim.Optimizer,
+    criterion: nn.Module,
+    device: torch.device,
+) -> tuple[float, float]:
+    model.train()
+    total_loss = 0.0
+    total_correct = 0
+    total_samples = 0
+    for points, labels in loader:
+        points = points.to(device)
+        labels = labels.to(device)
+        optimizer.zero_grad()
+        logits = model(points)
+        loss = criterion(logits, labels)
+        loss.backward()
+        optimizer.step()
+        preds = logits.argmax(dim=1)
+        total_loss += loss.item() * points.size(0)
+        total_correct += (preds == labels).sum().item()
+        total_samples += points.size(0)
+    return total_loss / total_samples, total_correct / total_samples
 
-#     disable gradient computation
-#     set model to evaluation mode
-#     initialize metrics
 
-#     FOR each batch:
-#         move data to device
-#         predictions = model(points)
-#         loss = loss_fn(predictions, labels)
-#         update metrics
+@torch.no_grad()
+def evaluate(
+    model: nn.Module,
+    loader: DataLoader,
+    criterion: nn.Module,
+    device: torch.device,
+) -> tuple[float, float]:
+    model.eval()
+    total_loss = 0.0
+    total_correct = 0
+    total_samples = 0
+    for points, labels in loader:
+        points = points.to(device)
+        labels = labels.to(device)
+        logits = model(points)
+        loss = criterion(logits, labels)
+        preds = logits.argmax(dim=1)
+        total_loss += loss.item() * points.size(0)
+        total_correct += (preds == labels).sum().item()
+        total_samples += points.size(0)
+    return total_loss / total_samples, total_correct / total_samples
 
-#     RETURN average_loss, average_accuracy
 
-# ==============================================================
-# Main training logic
-# ==============================================================
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--config",
+        type=str,
+        default=None,
+    )
+    args = parser.parse_args()
 
-# FUNCTION main():
+    cfg = get_config(args.config)
 
-#     parse command-line arguments
-#     load configuration file
+    root_processed = cfg.dataset.processed_dir
+    train_ds = TreePointCloudDataset(root_processed, "train")
+    val_ds = TreePointCloudDataset(root_processed, "val")
 
-#     create training and validation datasets
-#     infer input dimension from first sample
-#     determine number of output classes
+    in_channels = train_ds[0][0].shape[1]
+    num_classes = cfg.dataset.num_classes
 
-#     choose CPU or GPU device
+    device = torch.device(cfg.training.device if torch.cuda.is_available() else "cpu")
 
-#     create data loaders
-#     create model
-#     create loss function
-#     create optimizer
-#     create learning rate scheduler
+    train_loader = DataLoader(
+        train_ds,
+        batch_size=cfg.training.batch_size,
+        shuffle=True,
+        num_workers=cfg.training.num_workers,
+        pin_memory=cfg.training.pin_memory,
+    )
+    val_loader = DataLoader(
+        val_ds,
+        batch_size=cfg.training.batch_size,
+        shuffle=False,
+        num_workers=cfg.training.num_workers,
+        pin_memory=cfg.training.pin_memory,
+    )
 
-#     create checkpoint directory
-#     best_validation_accuracy = 0
+    model = PointNet2Classifier(in_channels, num_classes).to(device)
+    criterion = nn.CrossEntropyLoss()
+    optimizer = torch.optim.Adam(
+        model.parameters(),
+        lr=cfg.training.learning_rate,
+        weight_decay=cfg.training.weight_decay,
+    )
 
-#     FOR each epoch:
-#         train_loss, train_acc = train_one_epoch(...)
-#         val_loss, val_acc = evaluate(...)
-#         update learning rate
+    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
+        optimizer,
+        T_max=cfg.training.num_epochs,
+    )
 
-#         print epoch summary
+    best_val_acc = 0.0
+    checkpoint_dir = cfg.training.checkpoint_dir
+    checkpoint_dir.mkdir(parents=True, exist_ok=True)
 
-#         IF validation accuracy improved:
-#             save model checkpoint
+    for epoch in range(cfg.training.num_epochs):
+        train_loss, train_acc = train_one_epoch(
+            model, train_loader, optimizer, criterion, device
+        )
+        val_loss, val_acc = evaluate(model, val_loader, criterion, device)
+        scheduler.step()
+        print(
+            f"Epoch {epoch + 1}/{cfg.training.num_epochs} "
+            f"train_loss={train_loss:.4f} train_acc={train_acc:.3f} "
+            f"val_loss={val_loss:.4f} val_acc={val_acc:.3f}"
+        )
+        if val_acc > best_val_acc:
+            best_val_acc = val_acc
+            ckpt_path = checkpoint_dir / "pointnet2_best.pth"
+            torch.save(model.state_dict(), ckpt_path)
+
+
+if __name__ == "__main__":
+    main()
+
