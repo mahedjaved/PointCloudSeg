@@ -32,6 +32,32 @@ PointCloudSeg/
 - Using Python ABC module to create a base class for augmentation that can be inherited by any augmentation class.
 - Main code inspired from: https://torch-points3d.readthedocs.io/en/latest/src/api/transforms.html
 
+# 2. Pre-Processing
+- Species Mapping : Maps tree species names to integer class IDs for training.
+- One-Hot Encoding : Converts textual labels (species names) into numeric labels suitable for ML models (onehot vector)
+- Tree Extraction : Find all LiDAR points within a radius on XY plane and return their features (XYZ + intensity)
+- Preprocessing Stage : 
+    - Reads a .las file (3D LiDAR point cloud of a plot).
+    - Converts the LAS points into a NumPy array.
+    - Loops over each tree in the GeoDataFrame (gdf_plot) corresponding to that plot:
+    - Checks species and geometry.
+    - Extracts the tree’s points using extract_tree_points.
+    - Creates a label array for the tree points.
+    - Applies the point cloud preprocessor (normalization, voxelization, augmentation, sampling).
+    - Saves the processed tree as a .npz file and store in data/processed/ folder
+    - Returns the list of generated sample IDs as part of the preprocessing function 
+- Main Preproc Runner:
+    - Sets up directories for output (processed/samples).
+    - Loads field survey data from a GeoJSON file containing tree positions and species.
+    - Initializes the PointCloudPreprocessor and species mapping.
+    - Loops through all .las files in the ALS dataset:
+        - Extracts the plot ID from the file name.
+        - Filters the GeoDataFrame to get trees in that plot.
+        - Processes the plot using process_plot.
+    - Perform post-processing split:
+        - Slits the generated data samples into train (80%) and validation (20%).
+        - Saves the train/val IDs as text files for later use in training.
+
 # References
 [1] Advancements in Point Cloud Data Augmentation for Deep Learning: A Survey
 Qinfeng Zhua,b, Lei Fana, 1
