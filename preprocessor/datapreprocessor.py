@@ -1,6 +1,9 @@
 import logging
+import shutil
 from pathlib import Path
 from typing import Dict, List, Tuple
+
+import kagglehub
 
 import geopandas as gpd
 import laspy
@@ -100,7 +103,24 @@ def run_preprocessing(
 ) -> None:
     logging.basicConfig(level=logging.INFO)
     cfg = get_config()
-
+    data_dir = Path(cfg.dataset.data_dir)
+    processed_root = Path(cfg.dataset.processed_dir)
+    processed_dir = processed_root / "samples"
+    sample_files = sorted(processed_dir.glob("*.npz"))
+    if not sample_files:
+        data_dir.mkdir(parents=True, exist_ok=True)
+        dataset_path = Path(kagglehub.dataset_download("sentinel3734/tree-detection-lidar-rgb"))
+        logger.info("Path to dataset files: %s", dataset_path)
+        for item in dataset_path.iterdir():
+            dest = data_dir / item.name
+            if item.is_dir():
+                if dest.exists():
+                    shutil.rmtree(dest)
+                shutil.copytree(item, dest)
+            else:
+                shutil.copy2(item, dest)
+        sample_files = sorted(processed_dir.glob("*.npz"))
+   
     data_dir = cfg.dataset.data_dir
     processed_dir = cfg.dataset.processed_dir
 

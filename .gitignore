@@ -4,7 +4,7 @@
 # Ignore all PNG images
 *.png
 
-# Ignore data directory (and everything inside it)
+# Ignore data directory 
 data/
 
 # miscellaneous

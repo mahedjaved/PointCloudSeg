@@ -22,7 +22,7 @@ from typing import Tuple, Optional, List
 import logging
 from pathlib import Path
 
-from config import PreprocessingConfig
+from config import PreprocessingConfig, get_config
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -315,11 +315,6 @@ class PointCloudPreprocessor:
             voxel_size=self.config.voxel_size
         ) if self.config.voxelize else None
         
-        self.sampler = FixedSizeSampler(
-            num_points=self.config.num_points,
-            method=self.config.sampling_method
-        )
-        
         # Initialize augmentation pipeline
         self.augmentations = self._build_augmentation_pipeline()
         
@@ -382,27 +377,18 @@ class PointCloudPreprocessor:
                 points, labels = aug.apply(points, labels)
             metadata['augmentation'] = 'applied'
         
-        # 4. Sample to fixed size
-        original_size = len(points)
-        points, labels = self.sampler.sample(points, labels)
-        metadata['sampling'] = {
-            'original_size': original_size,
-            'sampled_size': len(points),
-            'method': self.config.sampling_method
-        }
+        #TODO: add sampling to fixed size
         
         return points, labels, metadata
 
 
 def main():
-    """Example usage and testing"""
-    # Generate random point cloud for testing - TODO: replace with database once selected
-    n_points = 10000
-    points = np.random.randn(n_points, 4)  # the (x, y, z, intensity)
-    labels = np.random.randint(0, 19, n_points)
-    
-    logger.info(f"Original point cloud: {points.shape}")
-    logger.info(f"Original labels: {labels.shape}")
+    sample_files = sorted(processed_dir.glob("*.npz"))
+    sample = np.load(sample_files[0])
+    points = sample["points"]
+    label_scalar = int(sample["label"])
+    labels = np.full(points.shape[0], label_scalar, dtype=np.int64)
+    logger.info(f"Loaded sample from {sample_files[0].name} with {points.shape[0]} points")
     
     # Create preprocessor
     config = PreprocessingConfig(
