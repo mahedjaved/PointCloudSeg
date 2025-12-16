@@ -65,8 +65,8 @@ class RandomRotationZ(AugmentationStrategy):
         sin_theta = np.sin(angle_rad)
         
         rotation_matrix = np.array([
-            [cos_theta, sin_theta, 0],
-            [-sin_theta, cos_theta, 0],
+            [cos_theta, -sin_theta, 0],
+            [sin_theta, cos_theta, 0],
             [0, 0, 1]
         ])
         
@@ -180,7 +180,7 @@ class PointCloudNormalizer:
         normalize point cloud.
         
         Args:
-            points: (N, 3+) array with [x, y, z, intensity?, ...]
+            points: (N, 3+) array with [x, y, z, intensity]
             
         Returns:
             normalized_points: Normalized point cloud
@@ -396,7 +396,7 @@ class PointCloudPreprocessor:
 
 def main():
     """Example usage and testing"""
-    # Generate random point cloud for testing
+    # Generate random point cloud for testing - TODO: replace with database once selected
     n_points = 10000
     points = np.random.randn(n_points, 4)  # the (x, y, z, intensity)
     labels = np.random.randint(0, 19, n_points)
