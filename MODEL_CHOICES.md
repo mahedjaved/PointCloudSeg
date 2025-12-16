@@ -1,6 +1,6 @@
-# Model Choice: PointNet++ for Tree-Level Species Classification
+# Model Choice: PointNet++ for Tree-Level Species Segmentation
 
-This project tackles **single-tree species classification** from airborne laser scanning (ALS) point clouds using a PointNet++-inspired architecture. Below is a rationale for this choice, followed by a critical, research-level evaluation in the context of forest remote sensing.
+This project tackles **single-tree species segmentation** from airborne laser scanning (ALS) point clouds using a PointNet++-inspired architecture. Below is a rationale for this choice, followed by a critical, research-level evaluation in the context of forest remote sensing.
 
 ## Why PointNet++ Is a Reasonable Choice
 
@@ -16,8 +16,8 @@ This project tackles **single-tree species classification** from airborne laser 
 - **Computationally light for small trees and small datasets**  
   At the tree level, each sample has relatively few points (e.g. 2–5k). This would have been computationally expensive had we gone for 3D CNN approaches that operate on volumetric grids. The solution would have been computationally expensive and memory-intensive. Compared to 3D sparse CNNs on volumetric grids, a PointNet++-inspired network offers a favorable trade-off between capacity and computational cost, which is important given the modest dataset size.
 
-- **Well-aligned with our preprocessing pipeline** 
-  In our augmentation pipeline we make use of normalization, optional voxel downsampling. This means that every tree is represented in a consistent coordinate system with similar scale and position. PointNet++-style architectures excel with this kind of preprocessed data because the network can focus on learning discriminative shape features rather than having to deal with arbitrary translations, rotations, or scale variations..
+- **Well-aligned with the preprocessing pipeline** 
+  In our augmentation and preprocessing pipeline we make use of normalization, optional voxel downsampling. This means that every tree is represented in a consistent coordinate system with similar scale and position. PointNet++-style architectures excel with this kind of preprocessed data because the network can focus on learning discriminative shape features rather than having to deal with arbitrary translations, rotations, or scale variations.
 
 
   Reference
