@@ -91,8 +91,6 @@ This section presents exploratory data analysis conducted to understand species 
 - Provides insights from several exploratory data analysis techniques with visualizations including: scatter plot, box pot, histograms, correlation matrices etc.
 - Summarizes key findings and trends observed during exploratory data analysis as well discuss future impacts these can have in game design choices
 
-Architecture is inspired by PointNet++, but simplified (no sampling/grouping)
-
 # Run Instructions
 Run the following in terminal.
 
