@@ -1,0 +1,15 @@
+# TODO: need to be filled later - can also be done programmatically??
+dataset:
+  base_url: 
+  data_dir: 
+  ignore_label: 0
+  learning_map:
+  name: 
+  num_classes: 
+  processed_dir: 
+  test_sequences:
+  
+  train_sequences:
+  
+  val_sequences:
+description: Point Cloud Semantic Segmentation Pipeline
