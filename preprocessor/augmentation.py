@@ -32,7 +32,6 @@ logger = logging.getLogger(__name__)
 # Abstract Base Classes (Dependency Inversion Principle)
 # ============================================================================
 
-# TODO: expand this to suit geometric transformations, normalization based transformatiosn etc.
 class AugmentationStrategy(ABC):
     """Abstract base class for augmentation strategies"""
     

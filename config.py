@@ -31,6 +31,9 @@ class PreprocessingConfig:
     # Voxelization
     voxelize = True
     voxel_size = 0.05  # 5cm voxels
+
+    # Sampling
+    num_points = 4096
     
     # Augmentation
     augment = True
@@ -170,4 +173,4 @@ if __name__ == "__main__":
     print(f"Project: {config.project_name} v{config.version}")
     print(f"Dataset: {config.dataset.name}")
     config.to_yaml("configs/default.yaml")
-    print("\nDefault configuration saved to configs/default.yaml")e
+    print("\nDefault configuration saved to configs/default.yaml")

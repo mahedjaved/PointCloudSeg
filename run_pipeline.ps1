@@ -5,12 +5,12 @@ Write-Host "Starting PointCloudSeg Pipeline" -ForegroundColor Cyan
 Write-Host "==========================================" -ForegroundColor Cyan
 Write-Host ""
 
-# Write-Host "[Step 1/4] Installing requirements..." -ForegroundColor Yellow
-# pip install -r requirements.txt
-# if ($LASTEXITCODE -ne 0) {
-#     Write-Host "Error installing requirements" -ForegroundColor Red
-#     exit 1
-# }
+Write-Host "[Step 1/4] Installing requirements..." -ForegroundColor Yellow
+pip install -r requirements.txt
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "Error installing requirements" -ForegroundColor Red
+    exit 1
+}
 
 Write-Host ""
 Write-Host "[Step 2/4] Running data preprocessor..." -ForegroundColor Yellow
