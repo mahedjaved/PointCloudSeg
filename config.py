@@ -18,8 +18,6 @@ class DatasetConfig:
     data_dir: Path = Path("data/raw")
     processed_dir: Path = Path("data/processed")
     num_classes: int = 9
-    ignore_label: int = 0
-
 
 @dataclass
 class PreprocessingConfig:
@@ -34,10 +32,6 @@ class PreprocessingConfig:
     voxelize = True
     voxel_size = 0.05  # 5cm voxels
     
-    # Sampling
-    num_points = 4096  # Fixed number of points per sample
-    sampling_method = "fps"  # 'fps' or 'random'
-    
     # Augmentation
     augment = True
     rotate_z = (-180.0, 180.0)  # degrees
@@ -45,15 +39,6 @@ class PreprocessingConfig:
     jitter_std = 0.01
     dropout_ratio = 0.2
     flip_prob = 0.5
-    
-    # Feature engineering
-    use_intensity = True
-    use_coordinates = True
-    compute_normals = False
-    
-    # Class balancing
-    class_balanced_sampling = True
-    oversample_minority = True
     
     # Multiprocessing
     num_workers = 4
@@ -68,42 +53,15 @@ class TrainingConfig:
     optimizer: str = "adam"
     learning_rate: float = 0.001
     weight_decay: float = 0.0001
-    momentum: float = 0.9
-    
     lr_scheduler: str = "cosine"
-    lr_decay_rate: float = 0.1
-    lr_decay_epochs: List[int] = field(default_factory=lambda: [100, 150])
-    
     num_epochs: int = 200
     batch_size: int = 8
-    accumulation_steps: int = 1
-    
-    loss_function: str = "cross_entropy"
-    class_weights: Optional[List[float]] = None
-    ignore_index: int = 0
-    
-    label_smoothing: float = 0.0
-    mixup_alpha: float = 0.0
-    
-    eval_frequency: int = 5
-    save_frequency: int = 10
-    
-    patience: int = 20
-    min_delta: float = 0.001
-    
     checkpoint_dir: Path = Path("checkpoints")
-    save_best_only: bool = True
-    
     log_dir: Path = Path("logs")
-    log_frequency: int = 10
-    
     device: str = "cuda"
-    mixed_precision: bool = True
     num_workers: int = 4
     pin_memory: bool = True
-    
     seed: int = 42
-    deterministic: bool = True
 
 
 @dataclass
@@ -211,6 +169,5 @@ if __name__ == "__main__":
     config = get_config()
     print(f"Project: {config.project_name} v{config.version}")
     print(f"Dataset: {config.dataset.name}")
-    
     config.to_yaml("configs/default.yaml")
-    print("\nDefault configuration saved to configs/default.yaml")
+    print("\nDefault configuration saved to configs/default.yaml")e

@@ -1,5 +1,5 @@
 # PointCloudSeg
-This project is a POC and a WIP for designing initial stages of an ML pipeline for Point Cloud Semantic Segmentation that can grow into a advanced-grade ML pipeline. Focusing more on methodology, licensing, workflow, and reasoning from data acquisition to data preparation and a training the model. The idea is to train a model that can capture statistical correlations between various species of trees captured in a forest environment. The patterns and trends learned will direclty impact downstream applications that will operate on generating a 3D forest like environmnet for stealth action video
+This project is a POC and a WIP for designing initial stages of an ML pipeline for Point Cloud Semantic Segmentation that can grow into a advanced-grade ML pipeline. Focusing more on methodology, licensing, workflow, and reasoning from data acquisition to data preparation and a training the model. The idea is leverage this POC to train a model that can capture statistical correlations between various species of trees captured in a forest environment. The patterns and trends learned will direclty impact downstream applications that will operate on generating a 3D forest like environmnet for a stealth action video game.
 
 # Project Structure
 ```
@@ -23,7 +23,8 @@ PointCloudSeg/
 ├── requirements.txt   # Lists Python dependencies required to run the project
 ├── LIBLICENSES.md     # Records licensing information for all used libraries
 ├── README.md          # Project overview, structure, methodology, and references
-└── MODEL_CHOICES.md   # Summarizes different model architectures considered for the project
+├── MODEL_CHOICES.md   # Summarizes different model architectures considered for the project
+└── DATA_CHOICES.md   # Details the datasets and data selecion steps used in the project
 
 ```
 
