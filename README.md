@@ -45,7 +45,7 @@ This folder outlines a modular point-cloud augmentation framework designed to im
 
 # 2. Pre-Processing
 
-This folder contains lines the data preprocessing pipeline that converts raw ALS LiDAR data and field survey annotations into per-tree training samples. It covers species label encoding, tree-level point extraction, normalization, voxelization, augmentation, and dataset splitting, producing standardized .npz samples suitable for efficient model training.
+This folder contains lines the data preprocessing pipeline that converts raw `ALS (Airborne Laser Scanning)` LiDAR data and field survey annotations into per-tree training samples. It covers species label encoding, tree-level point extraction, normalization, voxelization, augmentation, and dataset splitting, producing standardized .npz samples suitable for efficient model training.
 
 - Species Mapping : Maps tree species names to integer class IDs for training.
 - One-Hot Encoding : Converts textual labels (species names) into numeric labels suitable for ML models (onehot vector)
