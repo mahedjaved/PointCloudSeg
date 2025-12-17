@@ -63,8 +63,11 @@ The dataset chosen dataset meets all required criteria:
 
 ## Evidence of License
 
+N.B. The article states the data is "openly available" and "freely used for research purposes" but doesn't specify a formal license. However, the Data Availability Statement is presented as shown.
+
 ![attachment](LicenseEvidence.png)
 
+ Accessible online at: https://pmc.ncbi.nlm.nih.gov/articles/PMC11415378/
 ## Summary of Dataset Selection Process:
 
 Several publicly available point cloud datasets were reviewed during data selection, but were excluded because they did not meet the project’s requirements. Indoor or urban datasets (e.g., sewer infrastructure, urban LiDAR) lacked annotations, human body and automotive datasets focus on less diverse structures, and some lacked clear licensing or semantic labels required for training. The final selected tree LiDAR dataset uniquely combines outdoor forest point clouds, species‑level annotations, and permissive licensing, making it well‑suited for semantic segmentation and downstream 3D forest generation.
