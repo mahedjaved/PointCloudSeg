@@ -61,6 +61,10 @@ The dataset chosen dataset meets all required criteria:
 - Permissive licensing suitable for commercial use
 - Structured for deep learning (e.g., point clouds with meaningful labels)
 
+## Evidence of License
+
+![attachment](LicenseEvidence.png)
+
 ## Summary of Dataset Selection Process:
 
 Several publicly available point cloud datasets were reviewed during data selection, but were excluded because they did not meet the project’s requirements. Indoor or urban datasets (e.g., sewer infrastructure, urban LiDAR) lacked annotations, human body and automotive datasets focus on less diverse structures, and some lacked clear licensing or semantic labels required for training. The final selected tree LiDAR dataset uniquely combines outdoor forest point clouds, species‑level annotations, and permissive licensing, making it well‑suited for semantic segmentation and downstream 3D forest generation.
